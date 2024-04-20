@@ -1,0 +1,95 @@
+@startuml
+
+state "ZL Stopp" as ZLs
+state "ZL Anschl oben - E0" as ZLo
+state "Motor läuft" as m
+state "Motor läuft - Init" as mI
+
+Ex: Auf einer Ebene (1-16) positioniert
+Ex: Bereit für RR Befehl
+Ex: Stoppe Motor;
+Ex: store(SchrittZ);
+Ein: Stoppe Motor;
+Ein: SchrittZ=read();
+ZLo: Stoppe Motor;
+ZLo: SchrittZ=0;
+ZLo: store(SchrittZ);
+ZLs: Not-Stopp Lichtschranken
+ZLs: Stoppe Motor;
+m: Lift geht hoch (+, m-auf)
+m: oder runter (-, m-abw)
+m: Starte Motor;
+m: SchrittZ+-=1;
+mI: Initialisierung
+mI: SchrittZ+=1;
+
+[*] --> Ein
+Ein -[dashed,#aaa]-> [*]
+Ein --> ZLo: IR_ZLo
+Ein --> mI: IR_Ex [x=0]
+Ein --> Ex: SchrittZ in SchrittZ(Ex)
+Ex --> m: IR_Ex [x>0]
+Ex --> mI: IR_Ex [x=0]
+Ex -[dashed,#aaa]-> [*]
+Ex --> Ex: IR_ZLs (Zug fährt ein / aus)
+m -[#red]-> ZLs: IR_ZLu [m-abw]
+m -[dashed,#aaa]-> [*]
+m -[#red]-> ZLo: IR_ZLo [m-auf]
+m --> Ex: SchrittZ = SchrittZ(Ex)
+m -[#red]-> ZLs: IR_ZLs
+ZLs -[dashed,#aaa]-> [*]
+ZLs --> m: IR_Ex [x>0]
+mI --> ZLo: IR_ZLo
+mI -[#red]-> ZLs: IR_ZLs
+ZLs --> mI: IR_Ex [x=0]
+mI -[dashed,#aaa]-> [*]
+ZLo -[dashed,#aaa]-> [*]
+ZLo --> m: IR_Ex [x>0]
+
+state "Ebenen-Kalibrierung" as prog
+state prog {
+    state "Motor läuft" as _m
+    state "Ebene wählen" as e
+    state "Start" as start
+
+    state exit <<outputPin>>
+    state entry <<inputPin>>
+    start: Text: "Bereit"
+    start: LCD ein;
+    start: Stoppe Motor;
+
+    _m: Lift geht hoch (+, auf)
+    _m: oder runter (-, ab)
+    _m: Starte Motor;
+    _m: SchrittZ+-=1;
+    e: Ebene mit +/- wählen
+    e: Stoppe Motor;
+
+    entry --> start
+    start --> _m: ab
+    start --> _m: auf
+    _m --> _m: auf
+    _m --> _m: ab
+    _m --> start: IR_ZLo [m-auf]
+    _m --> e: IR_Stopp
+    _m -[#red]-> start: IR_ZLu [m-abw]
+    _m -[#red]-> start: IR_ZLs
+    e --> e: auf
+    e --> e: ab
+    e --> start: IR_Store\nstore(SchrittZ, ex)
+    e --> exit: IR_Prog
+    start --> exit: IR_Prog
+}
+
+ZLo --> entry: IR_Prog
+entry -[dashed,#aaa]-> [*]
+exit --> mI: IR_Ex [x=0]
+
+note right of Ein
+ IR_* = Interrupt / Sensor / Befehl
+ IR_Ex = RR Befehl Ebene x anzusteuern
+ ZL = Zuglift
+ Ex = Ebene x (0-16)
+end note
+
+@enduml
