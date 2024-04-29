@@ -1,23 +1,34 @@
 # Zuglift – Arduino / RocRail Steuerung
 
 ## Projektidee
-Einen Modell-Eisenbahn-Bahnhof mit 32 Gleisen, senkrecht übereinander angeordnet, in einem Liftsystem.
+Einen Modell-Eisenbahn-Bahnhof mit 32 Gleisen, in Etagen übereinander angeordnet, in einem Liftsystem.
 
-Der Lift kennt 16 Stockwerke (Ebenen), auf jedem Stockwerk (Ebene) sind zwei Gleise nebeneinander. Via Motor wird der Lift auf und ab bewegt. Die Steuerung des Liftsystems, also welches Stockwerk angefahren werden soll, geschieht über [RocRail](https://wiki.rocrail.net).
+Jede Etage hat zwei Gleise nebeneinander, ergibt 16 Etagen (Ebenen). Die Gleise sind auf einer waagrechten Platte montiert, welche an einer senkrechten Wand angebracht ist. Ein Motor bewegt die Wand auf und ab (Liftsystem). [RocRail](https://wiki.rocrail.net) steuert via [Arduino](https://www.arduino.cc) die Anlage.
 
 ## Lösungsansatz
-**RocRail** schickt **DCC** Signale an ein **Arduino**. Das DCC Signal enthält die gewünschte Ebene. Das Arduino steuert dann den Motor an, dreht diesen also so lange auf- / abwärts bis die gewünschte Ebene erreicht ist. Verwendet wird ein **Schrittmotor**. Auf dem Arduino ist gespeichert, welche Ebene, wie viele Schritte vom Nullpunkt entfernt ist.
+**RocRail** schickt **DCC** Signale an ein **Arduino**. Das DCC Signal enthält die gewünschte Ebene. Das Arduino steuert dann den Motor an, dreht diesen also so lange auf- / abwärts bis die gewünschte Ebene erreicht ist. Verwendet wird ein **Schrittmotor**. Auf dem Arduino ist gespeichert, welche Ebene wie viele Schritte vom Nullpunkt (Ebene 0) entfernt ist.
+
+### Variante 
+Bei einer früheren Variante versuchten wir die Ebenen anhand eines elektrischen Widerstands zu erkennen. Sobald eine Ebene kontakt hatte mit dem Tisch (Sensor / Lichtschranke), konnte via Arduino ein bestimmter elektrischer Widerstand gemessen werden. Die Schalter waren via Widerstandsleiter mit einem Arduino-Analog Pin verbunden. \
+Die Lösung hatte folgende Nachteile:
+
+* Der gemessene Widerstand schwankte bei uns zu stark. Teilweise waren die Werte überlappend mit den Soll-Werten benachbarter Ebenen.
+* Die Elektronik war fehleranfällig. Viele Kabel und Verbindungen.
+* Installation und Wartung Ebenen-Schalter (zuerst Rollentaster, später Lichtschranken) war aufwändig.
+
+Durch die Verwendung eines Schrittmotors sind alle obigen Probleme obsolet. Die minimale Drehbewegung eines Schrittmotors entspricht 0.001 mm vertikale Lift-Bewegung.
 
 ## Implementierung
-TBD Optokoppler, Sensoren, DCC Signal, Programmierung via Shield, ...
+TBD Optokoppler, Sensoren, DCC Signal, Programmierung via Shield, Motorsteuerung
 
 ### Aufbau Liftsystem
-TBD Skizze / Schnitt des Liftsystems
+
+![aufbau.svg](doc/aufbau.svg)
 
 ### Schema – Verdrahtung
-[schema.pdf](spec%2Fschema.pdf)
+[schema.pdf](spec/schema.pdf)
 
-### Source Code für Arduino
+### Source Code für Arduino Programm
 [arduino-zuglift.ino](arduino-zuglift%2Farduino-zuglift.ino)
 
 ### Zustandsdiagram von Arduino Programm
